@@ -136,4 +136,8 @@ function reveal(row, col) {
     return val;
 }
 
+Array.from(document.getElementsByTagName('audio'))
+.forEach(el => el.addEventListener('ended',
+            () => document.location.reload()));
+
 document.body.addEventListener('contextmenu', (e) => e.preventDefault(), false);
