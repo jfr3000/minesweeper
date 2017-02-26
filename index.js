@@ -31,9 +31,6 @@ function markSurrounding(world, row, col) {
     runAround(world, row, col, incrementField);
 }
 
-function showWorld(world) {
-    world.map( (row)=> console.log(row.join(' ')));
-}
 function makeHtml(width, height) {
     let row = '<div class="row">'+new Array(width).fill('<div></div>').join('')+'</div>';
     return Array(height).fill(row).join('');
@@ -87,7 +84,7 @@ function click(world, e) {
     if (world[row][col] == ' ') {
         return fill(world, row, col);
     }
-    let val = reveal(row, col);
+    let val = reveal(world, row, col);
     if (val=='r') {
         // user clicked on a revealed number
         let flags = 0;
@@ -102,30 +99,19 @@ function click(world, e) {
 
 function fill(world, row, col) {
     if (row<0 || row>=world.length || col<0 || col>=world[0].length) return;
-    let val = reveal(row, col);
+    let val = reveal(world, row, col);
     if (val === ' ') {
         runAround(world, row, col, fill);
     }
 }
 
-let world = makeWorld(8, 8, 1/10);
-let playingField = document.getElementById('playingField');
-playingField.innerHTML = makeHtml(8, 8);
-let clockId = startClock();
-playingField.addEventListener('mousedown', (e) => {
-    click(world, e);
-    if (checkIfWon(world)) {
-        clearInterval(clockId);
-        igniteFireworks();
-    }
-});
 
 function igniteFireworks() {
     document.getElementById('fireworks').style.display = 'block';
     document.querySelector('audio.fireworks').play();
 }
 
-function reveal(row, col) {
+function reveal(world, row, col) {
     let el = elementAt(row, col);
     let val = world[row][col];
     if (el.classList.contains('revealed')) return 'r';
@@ -150,8 +136,24 @@ function startClock() {
     return clockId;
 }
 
-Array.from(document.getElementsByTagName('audio'))
-.forEach(el => el.addEventListener('ended',
-            () => document.location.reload()));
+function init(width, height, bombDensity) {
+    let world = makeWorld(width, height, bombDensity);
+    let playingField = document.getElementById('playingField');
+    playingField.innerHTML = makeHtml(width, height);
+    let clockId = startClock();
+    playingField.addEventListener('mousedown', (e) => {
+        click(world, e);
+        if (checkIfWon(world)) {
+            clearInterval(clockId);
+            igniteFireworks();
+        }
+    });
+    Array.from(document.getElementsByTagName('audio'))
+    .forEach(el => el.addEventListener('ended',
+                () => document.location.reload()));
 
-document.body.addEventListener('contextmenu', (e) => e.preventDefault(), false);
+    document.body.addEventListener('contextmenu', (e) => e.preventDefault(), false);
+}
+
+init(8, 4, 1/10);
+
