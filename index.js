@@ -23,20 +23,14 @@ function markBombPositions(world, bombs) {
 }
 
 function markSurrounding(world, row, col) {
-    for (let i = row-1; i <= row+1; i++) {
-        if (i < 0 || i >= world.length) continue;
-        for(let j = col-1; j <= col+1; j++) {
-            if (j < 0 || j >= world[0].length) continue;
-            incrementField(world, i, j);
-        }
+    function incrementField(world, row, col) {
+        let field =world[row][col];
+        if (!field || field === 'x') return;
+        world[row][col] = field === ' ' ? 1 : field+1;
     }
+    runAround(world, row, col, incrementField);
 }
 
-function incrementField(world, row, col) {
-    let field =world[row][col];
-    if (!field || field === 'x') return;
-    world[row][col] = field === ' ' ? 1 : field+1;
-}
 function showWorld(world) {
     world.map( (row)=> console.log(row.join(' ')));
 }
@@ -45,15 +39,42 @@ function makeHtml(width, height) {
     return Array(height).fill(row).join('');
 }
 
+function runAround(world, row, col, visit) {
+    for (let i = row-1; i <= row+1; i++) {
+        if (i < 0 || i >= world.length) continue;
+        for(let j = col-1; j <= col+1; j++) {
+            if (j < 0 || j >= world[0].length) continue;
+            visit(world, i, j);
+        }
+    }
+}
+
+function elementAt(row, col) {
+    return document.getElementById('playingField').children[row].children[col];
+}
+
+function click(world, row, col) {
+    if (world[row][col] == ' ') {
+        return fill(world, row, col);
+    }
+    let val = reveal(row, col);
+    if (val=='r') {
+        // user clicked on a revealed number
+        let flags = 0;
+        runAround(world, row, col, (world, row, col)=> {
+            if (elementAt(row, col).classList.contains('flag')) flags++;
+        });
+        if (flags !== world[row][col]) return;
+        runAround(world, row, col, fill);
+    }
+}
+
+
 function fill(world, row, col) {
     if (row<0 || row>=world.length || col<0 || col>=world[0].length) return;
     let val = reveal(row, col);
-    console.log('reveal', val);
     if (val === ' ') {
-        fill(world, row+1, col);
-        fill(world, row-1, col);
-        fill(world, row, col+1);
-        fill(world, row, col-1);
+        runAround(world, row, col, fill);
     }
 }
 
@@ -65,13 +86,15 @@ playingField.addEventListener('mousedown', (e) => {
     let col = Array.from(rowElement.children).indexOf(e.target);
     let row = Array.from(rowElement.parentElement.children).indexOf(rowElement);
     if (e.button === 2) return e.target.classList.add('flag');
-    fill(world, row, col);
+    click(world, row, col);
 });
 
+
 function reveal(row, col) {
-    let el = document.getElementById('playingField').children[row].children[col];
+    let el = elementAt(row, col);
     let val = world[row][col];
     if (el.classList.contains('revealed')) return 'r';
+    if (el.classList.contains('flag')) return 'f';
     el.classList.add('revealed');
     if (val === 'x') {
         el.classList.add('bomb');
