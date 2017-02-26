@@ -1,6 +1,10 @@
 <body>
 <audio id="explosion" src="explosion.wav"></audio>
+<audio class="fireworks" src="fireworks.mp3"></audio>
 <div id="playingField"></div>
+<div id="fireworks" >
+    <img src="fireworks.gif">
+</div>
 <script src="index.js"></script>
 <style>
     .row>div {
@@ -19,6 +23,18 @@
     }
     .bomb::before {
         content: "\1f4a3";
+    }
+    #fireworks {
+        display:none;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        position: absolute;
+        top: 0;
+        z-index: 10;
+    }
+    #fireworks > img {
+        margin: auto;
     }
 </style>
 </body>

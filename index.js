@@ -39,6 +39,32 @@ function makeHtml(width, height) {
     return Array(height).fill(row).join('');
 }
 
+function visitWorld(world, visit) {
+    for (let i = 0; i < world.length; i++) {
+        for(let j = 0; j < world[0].length; j++) {
+            visit(world, i, j);
+        }
+    }
+}
+
+function checkIfWon(world)  {
+    let correctFlags = 0;
+    let bombs = 0;
+    let fail = false;
+    visitWorld(world, (world, row, col) => {
+        let hasFlag = elementAt(row, col).classList.contains('flag');
+        if (world[row][col] == 'x') {
+            bombs++;
+            if (hasFlag) correctFlags++;
+        } else {
+            if (hasFlag) fail = true;
+        }
+    });
+    if (fail) return false;
+    if (correctFlags == bombs) return true;
+    return false;
+}
+
 function runAround(world, row, col, visit) {
     for (let i = row-1; i <= row+1; i++) {
         if (i < 0 || i >= world.length) continue;
@@ -87,8 +113,13 @@ playingField.addEventListener('mousedown', (e) => {
     let row = Array.from(rowElement.parentElement.children).indexOf(rowElement);
     if (e.button === 2) return e.target.classList.add('flag');
     click(world, row, col);
+    if (checkIfWon(world)) igniteFireworks();
 });
 
+function igniteFireworks() {
+    document.getElementById('fireworks').style.display = 'block';
+    document.querySelector('audio.fireworks').play();
+}
 
 function reveal(row, col) {
     let el = elementAt(row, col);
