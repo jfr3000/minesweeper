@@ -1,4 +1,6 @@
-function makeWorld(width, height, bombs) {
+function makeWorld(width, height, bombDensity) {
+    let fields = width * height;
+    let bombs = Math.floor(fields * bombDensity);
     let world = Array(height).fill(undefined).map(() => {
         return Array(width).fill(' ');
     });
@@ -43,7 +45,19 @@ function makeHtml(width, height) {
     return Array(height).fill(row).join('');
 }
 
-let world = makeWorld(8, 8, 7);
+function fill(world, row, col) {
+    if (row<0 || row>=world.length || col<0 || col>=world[0].length) return;
+    let val = reveal(row, col);
+    console.log('reveal', val);
+    if (val === ' ') {
+        fill(world, row+1, col);
+        fill(world, row-1, col);
+        fill(world, row, col+1);
+        fill(world, row, col-1);
+    }
+}
+
+let world = makeWorld(8, 8, 1/10);
 let playingField = document.getElementById('playingField');
 playingField.innerHTML = makeHtml(8, 8);
 playingField.addEventListener('mousedown', (e) => {
@@ -51,13 +65,21 @@ playingField.addEventListener('mousedown', (e) => {
     let col = Array.from(rowElement.children).indexOf(e.target);
     let row = Array.from(rowElement.parentElement.children).indexOf(rowElement);
     if (e.button === 2) return e.target.classList.add('flag');
-    if (world[row][col] === 'x') {
-        e.target.classList.add('bomb');
+    fill(world, row, col);
+});
+
+function reveal(row, col) {
+    let el = document.getElementById('playingField').children[row].children[col];
+    let val = world[row][col];
+    if (el.classList.contains('revealed')) return 'r';
+    el.classList.add('revealed');
+    if (val === 'x') {
+        el.classList.add('bomb');
         document.getElementById('explosion').play();
         return console.log('boom');
     }
-    e.target.innerHTML = world[row][col];
-    e.target.classList.add('revealed');
-});
+    el.innerHTML = val;
+    return val;
+}
 
 document.body.addEventListener('contextmenu', (e) => e.preventDefault(), false);
