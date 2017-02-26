@@ -2,6 +2,7 @@
 <audio id="explosion" src="explosion.wav"></audio>
 <audio class="fireworks" src="fireworks.mp3"></audio>
 <div id="playingField"></div>
+<div id="clock">0s</div>
 <div id="fireworks" >
     <img src="fireworks.gif">
 </div>
@@ -35,6 +36,18 @@
     }
     #fireworks > img {
         margin: auto;
+    }
+    #playingField {
+        display: inline-block;
+    }
+    #clock {
+        vertical-align: top;
+        margin-left: 2em;
+        font-size: 30pt;
+        display: inline-block;
+        z-index: 11;
+        color: #3333ff;
+        position: relative;
     }
 </style>
 </body>

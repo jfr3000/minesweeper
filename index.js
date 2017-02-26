@@ -79,7 +79,11 @@ function elementAt(row, col) {
     return document.getElementById('playingField').children[row].children[col];
 }
 
-function click(world, row, col) {
+function click(world, e) {
+    let rowElement = e.target.parentElement;
+    let col = Array.from(rowElement.children).indexOf(e.target);
+    let row = Array.from(rowElement.parentElement.children).indexOf(rowElement);
+    if (e.button === 2) return e.target.classList.add('flag');
     if (world[row][col] == ' ') {
         return fill(world, row, col);
     }
@@ -107,13 +111,13 @@ function fill(world, row, col) {
 let world = makeWorld(8, 8, 1/10);
 let playingField = document.getElementById('playingField');
 playingField.innerHTML = makeHtml(8, 8);
+let clockId = startClock();
 playingField.addEventListener('mousedown', (e) => {
-    let rowElement = e.target.parentElement;
-    let col = Array.from(rowElement.children).indexOf(e.target);
-    let row = Array.from(rowElement.parentElement.children).indexOf(rowElement);
-    if (e.button === 2) return e.target.classList.add('flag');
-    click(world, row, col);
-    if (checkIfWon(world)) igniteFireworks();
+    click(world, e);
+    if (checkIfWon(world)) {
+        clearInterval(clockId);
+        igniteFireworks();
+    }
 });
 
 function igniteFireworks() {
@@ -134,6 +138,16 @@ function reveal(row, col) {
     }
     el.innerHTML = val;
     return val;
+}
+
+function startClock() {
+    let startTime = Date.now();
+    let clock = document.getElementById('clock');
+    let clockId = setInterval( ()=>{
+        let seconds = Math.floor((Date.now() - startTime) / 1000);
+        clock.innerHTML = `${seconds}s`;
+    }, 1000);
+    return clockId;
 }
 
 Array.from(document.getElementsByTagName('audio'))
