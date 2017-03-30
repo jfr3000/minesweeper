@@ -105,10 +105,12 @@ function fill(world, row, col) {
     }
 }
 
-
-function igniteFireworks() {
-    document.getElementById('fireworks').style.display = 'block';
-    document.querySelector('audio.fireworks').play();
+function endGame(won) {
+    const button = document.getElementById('play');
+    button.innerHTML = 'Play again';
+    button.style.display = 'block';
+    let clip = won ? 'audio#fireworks' : 'audio#explosion';
+    document.querySelector(clip).play();
 }
 
 function reveal(world, row, col) {
@@ -119,8 +121,7 @@ function reveal(world, row, col) {
     el.classList.add('revealed');
     if (val === 'x') {
         el.classList.add('bomb');
-        document.getElementById('explosion').play();
-        return console.log('boom');
+        return endGame(false);
     }
     el.innerHTML = val;
     return val;
@@ -136,22 +137,36 @@ function startClock() {
     return clockId;
 }
 
-function init(width, height, bombDensity) {
+function startGame(width, height, bombDensity, playingField) {
     let world = makeWorld(width, height, bombDensity);
-    let playingField = document.getElementById('playingField');
     playingField.innerHTML = makeHtml(width, height);
     let clockId = startClock();
-    playingField.addEventListener('mousedown', (e) => {
+    function performClick(e) {
         click(world, e);
         if (checkIfWon(world)) {
-            clearInterval(clockId);
-            igniteFireworks();
+            endGame(true);
         }
-    });
+    }
+    //TODO removing these listeners doesn't work because we make a new
+    //function every time startGame is called.
+    playingField.removeEventListener('mousedown', performClick, false);
+    playingField.addEventListener('mousedown', performClick, false);
+    function stopClock() {
+        clearInterval(clockId);
+    }
     Array.from(document.getElementsByTagName('audio'))
-    .forEach(el => el.addEventListener('ended',
-                () => document.location.reload()));
+        .forEach(el => {
+            el.removeEventListener('play', stopClock);
+            el.addEventListener('play', stopClock);
+        });
+}
 
+function init(width, height, bombDensity) {
+    let playingField = document.getElementById('playingField');
+    document.getElementById('play').addEventListener('click', (e) => {
+        e.target.style.display = 'none';
+        startGame(width, height, bombDensity, playingField);
+    });
     document.body.addEventListener('contextmenu', (e) => e.preventDefault(), false);
 }
 
