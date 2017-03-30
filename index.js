@@ -105,7 +105,8 @@ function fill(world, row, col) {
     }
 }
 
-function endGame(won) {
+function endGame(world, won) {
+    if (won) revealRemaining(world);
     const button = document.getElementById('play');
     button.innerHTML = 'Play again';
     button.style.display = 'block';
@@ -121,10 +122,14 @@ function reveal(world, row, col) {
     el.classList.add('revealed');
     if (val === 'x') {
         el.classList.add('bomb');
-        return endGame(false);
+        return endGame(world, false);
     }
     el.innerHTML = val;
     return val;
+}
+
+function revealRemaining(world) {
+   visitWorld(world, (world, row, col) => elementAt(row, col).classList.add('revealed'));
 }
 
 function startClock() {
@@ -144,7 +149,7 @@ function startGame(width, height, bombDensity, playingField) {
     function performClick(e) {
         click(world, e);
         if (checkIfWon(world)) {
-            endGame(true);
+            endGame(world, true);
         }
     }
     //TODO removing these listeners doesn't work because we make a new
