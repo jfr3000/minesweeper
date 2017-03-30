@@ -145,7 +145,8 @@ function startClock() {
 function startGame(width, height, bombDensity, playingField) {
     let world = makeWorld(width, height, bombDensity);
     playingField.innerHTML = makeHtml(width, height);
-    let clockId = startClock();
+    document.getElementById('clock').innerHTML = "0s";
+    let clockId;
     function performClick(e) {
         click(world, e);
         if (checkIfWon(world)) {
@@ -156,6 +157,7 @@ function startGame(width, height, bombDensity, playingField) {
     //function every time startGame is called.
     playingField.removeEventListener('mousedown', performClick, false);
     playingField.addEventListener('mousedown', performClick, false);
+    playingField.addEventListener('mousedown', () => clockId = startClock(), {once: true});
     function stopClock() {
         clearInterval(clockId);
     }
